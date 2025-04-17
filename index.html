@@ -22,12 +22,66 @@
             position: relative;
             width: 260px;
             height: 400px;
-            background-color: #222;
             border-radius: 20px;
             overflow: hidden;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-            transition: transform 0.5s;
+            background-color: transparent;
+            z-index: 1;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 140%;
+            height: 140%;
+            transform: translate(-50%, -50%) rotate(0deg); /* 預設不轉 */
+            border-radius: 50%;
+            background: conic-gradient(
+                    from 0deg,
+                    rgba(255, 80, 240, 0.7),
+                    rgba(0, 255, 255, 0.5),
+                    rgba(255, 80, 240, 0.7)
+            );
+            filter: blur(20px);
+            z-index: 0;
+            transition: transform 0.3s;
+            pointer-events: none;
+            animation: rotate-glow 6s linear infinite;
+
+        }
+
+        /* 只有 hover 時才加動畫 */
+        .card:hover::before {
+            animation: rotate-glow 6s linear infinite;
+        }
+
+        /* 光暈旋轉動畫 */
+        @keyframes rotate-glow {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* 內容背景區保持不變 */
+        .card::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border-radius: 19px;
+            background-color: #222;
+            z-index: 1;
+        }
+
+        .card:hover::after {
+            filter: blur(1px);
+            opacity: 1;
         }
 
         .card:hover {
@@ -87,13 +141,75 @@
             50% { transform: translateY(-6px); }
             100% { transform: translateY(0); }
         }
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, #1a0033, #000);
+        }
+
+
     </style>
 </head>
 <body>
 
-<h1 style="text-align: center; color: #fff;">崩壞：星穹鐵道 圖鑑</h1>
+<canvas id="stars"></canvas>
 
+<h1 style="text-align: center; color: #fff;">崩壞：星穹鐵道 圖鑑</h1>
 <div class="gallery" id="gallery"></div>
+
+<script>
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function createStars(count) {
+        stars = [];
+        for (let i = 0; i < count; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.8 + 0.5,
+                opacity: Math.random(),
+                flickerSpeed: Math.random() * 0.02 + 0.005
+            });
+        }
+    }
+
+    function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            star.opacity += star.flickerSpeed;
+            if (star.opacity >= 1 || star.opacity <= 0.1) {
+                star.flickerSpeed *= -1;
+            }
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(drawStars);
+    }
+
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        createStars(150);
+    });
+
+    resizeCanvas();
+    createStars(150);
+    drawStars();
+</script>
+
 
 <script>
     fetch('characters.json')
@@ -116,4 +232,5 @@
 </script>
 
 </body>
+
 </html>
