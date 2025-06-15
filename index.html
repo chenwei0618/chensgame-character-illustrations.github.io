@@ -232,6 +232,11 @@
                 return;
             }
 
+            if (!question.includes("?")) {
+                $answerBox.html(lang === "zh" ? "❗請在問題中加入問號「？」" : "❗Please include a question mark (?) in your question.");
+                return;
+            }
+
             $answerBox.html("");
             $characterCard.html(`
         <div class="card-draw">
